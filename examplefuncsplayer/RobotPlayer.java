@@ -55,10 +55,10 @@ public strictfp class RobotPlayer {
 
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        System.out.println("I'm a " + rc.getType() + " and I just got created! I have health " + rc.getHealth());
+        //System.out.println("I'm a " + rc.getType() + " and I just got created! I have health " + rc.getHealth());
 
         // You can also use indicators to save debug notes in replays.
-        rc.setIndicatorString("Hello world!");
+        //rc.setIndicatorString("Hello world!");
 
         while (true) {
             // This code runs during the entire lifespan of the robot, which is why it is in an infinite
@@ -86,13 +86,13 @@ public strictfp class RobotPlayer {
                 // Oh no! It looks like we did something illegal in the Battlecode world. You should
                 // handle GameActionExceptions judiciously, in case unexpected events occur in the game
                 // world. Remember, uncaught exceptions cause your robot to explode!
-                System.out.println(rc.getType() + " Exception");
+                //System.out.println(rc.getType() + " Exception");
                 e.printStackTrace();
 
             } catch (Exception e) {
                 // Oh no! It looks like our code tried to do something bad. This isn't a
                 // GameActionException, so it's more likely to be a bug in our code.
-                System.out.println(rc.getType() + " Exception");
+                //System.out.println(rc.getType() + " Exception");
                 e.printStackTrace();
 
             } finally {
@@ -117,17 +117,17 @@ public strictfp class RobotPlayer {
         if (rc.canBuildAnchor(Anchor.STANDARD)) {
             // If we can build an anchor do it!
             rc.buildAnchor(Anchor.STANDARD);
-            rc.setIndicatorString("Building anchor! " + rc.getAnchor());
+            //rc.setIndicatorString("Building anchor! " + rc.getAnchor());
         }
         if (rng.nextBoolean()) {
             // Let's try to build a carrier.
-            rc.setIndicatorString("Trying to build a carrier");
+            //rc.setIndicatorString("Trying to build a carrier");
             if (rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
                 rc.buildRobot(RobotType.CARRIER, newLoc);
             }
         } else {
             // Let's try to build a launcher.
-            rc.setIndicatorString("Trying to build a launcher");
+            //rc.setIndicatorString("Trying to build a launcher");
             if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                 rc.buildRobot(RobotType.LAUNCHER, newLoc);
             }
@@ -149,7 +149,7 @@ public strictfp class RobotPlayer {
             }
             if (islandLocs.size() > 0) {
                 MapLocation islandLocation = islandLocs.iterator().next();
-                rc.setIndicatorString("Moving my anchor towards " + islandLocation);
+                //rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 while (!rc.getLocation().equals(islandLocation)) {
                     Direction dir = rc.getLocation().directionTo(islandLocation);
                     if (rc.canMove(dir)) {
@@ -157,7 +157,7 @@ public strictfp class RobotPlayer {
                     }
                 }
                 if (rc.canPlaceAnchor()) {
-                    rc.setIndicatorString("Huzzah, placed anchor!");
+                    //rc.setIndicatorString("Huzzah, placed anchor!");
                     rc.placeAnchor();
                 }
             }
@@ -170,10 +170,10 @@ public strictfp class RobotPlayer {
                 if (rc.canCollectResource(wellLocation, -1)) {
                     if (rng.nextBoolean()) {
                         rc.collectResource(wellLocation, -1);
-                        rc.setIndicatorString("Collecting, now have, AD:" + 
-                            rc.getResourceAmount(ResourceType.ADAMANTIUM) + 
-                            " MN: " + rc.getResourceAmount(ResourceType.MANA) + 
-                            " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+                        //rc.setIndicatorString("Collecting, now have, AD:" +
+                            //rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                            //" MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                            //" EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
                     }
                 }
             }
@@ -217,7 +217,7 @@ public strictfp class RobotPlayer {
             MapLocation toAttack = rc.getLocation().add(Direction.EAST);
 
             if (rc.canAttack(toAttack)) {
-                rc.setIndicatorString("Attacking");        
+                //rc.setIndicatorString("Attacking");
                 rc.attack(toAttack);
             }
         }
