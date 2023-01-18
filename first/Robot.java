@@ -4,9 +4,14 @@ import battlecode.common.*;
 public abstract class Robot {
 
     static RobotController rc;
-    HeadquarterComm hComm;
+    static HeadquarterComm hComm;
+
+    OtherComm otherComm;
 
     Pathfinder pathfinder;
+
+    Direction[] directions = Direction.values();
+    Explore explore;
 
 
 
@@ -15,6 +20,8 @@ public abstract class Robot {
         this.rc = rc; //this should always go first
         this.hComm = new HeadquarterComm();
         this.pathfinder = new Pathfinder();
+        this.explore = new Explore();
+        this.otherComm = new OtherComm();
     }
 
     abstract void play() throws GameActionException;
@@ -22,7 +29,14 @@ public abstract class Robot {
     void initTurn(){
     }
 
-    void endTurn(){
+    void endTurn() throws GameActionException {
+        pathfinder.bugPath.checkCurrent();
+        explore.mapdata.run();
+        explore.mapdata.reportMap();
+        if (rc.getType() == RobotType.CARRIER){
+            Carrier c = (Carrier)this;
+            c.im.run();
+        }
     }
 
 }

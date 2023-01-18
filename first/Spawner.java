@@ -112,7 +112,7 @@ public class Spawner {
 
     void computeLowVision() throws GameActionException {
         MapInfo myMapInfo = rc.senseMapInfo(rc.getLocation()); //TODO: change this
-        if (myMapInfo.getCooldownMuliplier(rc.getTeam()) > 1) myVision = GameConstants.CLOUD_VISION_RADIUS_SQUARED;
+        if (myMapInfo.hasCloud()) myVision = GameConstants.CLOUD_VISION_RADIUS_SQUARED;
         else myVision = rc.getType().visionRadiusSquared;
     }
 

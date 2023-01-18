@@ -15,6 +15,8 @@ public class BugPath {
     Boolean rotateRight = null; //if I should rotate right or left
     Boolean rotateRightAux = null;
     MapLocation lastObstacleFound = null; //latest obstacle I've found in my way
+
+    MapLocation lastCurrent = null;
     int minDistToTarget = Constants.INF; //minimum distance I've been to the enemy while going around an obstacle
     MapLocation minLocationToTarget = null;
     MapLocation prevTarget = null; //previous target
@@ -27,13 +29,16 @@ public class BugPath {
 
     int turnsMovingToObstacle = 0;
     final int MAX_TURNS_MOVING_TO_OBSTACLE = 2;
-
     final int MIN_DIST_RESET = 3;
 
-    void update(){
+    void update(MapLocation target){
         if (!rc.isMovementReady()) return;
         myLoc = rc.getLocation();
         round = rc.getRoundNum();
+        generateCanMove(target);
+    }
+
+    void generateCanMove(MapLocation target){
         canMoveArray = new boolean[9];
         for (Direction dir : dirs){
             switch (dir){
@@ -45,6 +50,35 @@ public class BugPath {
                     break;
             }
         }
+        if (lastCurrent != null){
+            int d = rc.getLocation().distanceSquaredTo(lastCurrent);
+            if (d > 0 && d <= 2){
+                lastObstacleFound = lastCurrent;
+                Direction dirCurrent = rc.getLocation().directionTo(lastCurrent);
+                canMoveArray[dirCurrent.ordinal()] = false;
+            }
+        }
+
+        try {
+
+            if (lastObstacleFound == null) {
+                for (Direction dir : dirs) {
+                    if (!canMoveArray[dir.ordinal()]) continue;
+                    MapLocation newLoc = rc.getLocation().add(dir);
+                    if (newLoc.distanceSquaredTo(target) <= 2) continue;
+                    Direction cur = rc.senseMapInfo(newLoc).getCurrentDirection();
+                    if (cur == null || cur == Direction.CENTER) continue;
+                    MapLocation newLoc2 = newLoc.add(cur);
+                    if (newLoc2.distanceSquaredTo(target) >= rc.getLocation().distanceSquaredTo(target)){
+                        canMoveArray[dir.ordinal()] = false;
+                    }
+                }
+            }
+        } catch (GameActionException e){
+            e.printStackTrace();
+        }
+
+
     }
 
     void debugMovement(){
@@ -63,9 +97,9 @@ public class BugPath {
         if (!rc.isMovementReady()) return;
         if (target == null) target = rc.getLocation();
         //if (Constants.DEBUG == 1)
-        rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 255);
+        rc.setIndicatorLine(rc.getLocation(), target, 255, 0, 255);
 
-        update();
+        update(target);
         //if (target == null) return;
 
 
@@ -102,13 +136,14 @@ public class BugPath {
         myLoc = rc.getLocation();
 
 
-        //If I'm at a minimum distance to the target, I'm free!
         int d = myLoc.distanceSquaredTo(target);
         if (d == 0){
             if (canMoveArray[Direction.CENTER.ordinal()]) return;
             moveSafe();
             return;
         }
+
+        //If I'm at a minimum distance to the target, I'm free!
         if (d < minDistToTarget){
             if (Constants.DEBUG_BUGPATH == 1) System.out.println("resetting on d < mindist");
             resetPathfinding();
@@ -127,7 +162,8 @@ public class BugPath {
         }
         else{
             dir = myLoc.directionTo(lastObstacleFound);
-            rc.setIndicatorDot(lastObstacleFound, 0, 0, 0);
+            rc.setIndicatorDot(lastObstacleFound, 0, 255, 0);
+            if (lastCurrent != null) rc.setIndicatorDot(lastCurrent, 255, 0, 0);
         }
 
         try {
@@ -283,6 +319,20 @@ public class BugPath {
             resetPathfinding();
         }
         states.add(state);
+    }
+
+    void checkCurrent() throws GameActionException{
+        if (lastObstacleFound == null){
+            lastCurrent = null;
+            return;
+        }
+        MapInfo mi = rc.senseMapInfo(rc.getLocation());
+        if (mi.getCurrentDirection() == null || mi.getCurrentDirection() == Direction.CENTER){
+            if (lastCurrent != null && lastObstacleFound.distanceSquaredTo(lastCurrent) == 0) return;
+            lastCurrent = null;
+            return;
+        }
+        lastCurrent = rc.getLocation();
     }
 
 }

@@ -23,6 +23,7 @@ public class Pathfinder {
             if (oldCooldown == newCooldown) return;
             oldCooldown = newCooldown;
         }
+        //bugPath.moveTo(target);
     }
 
 }

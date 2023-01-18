@@ -2,21 +2,26 @@ package first;
 
 import battlecode.common.*;
 
+import java.util.Map;
+
 public class HeadquarterComm {
 
     static int hqIndex = 1; //hq index
-    RobotController rc;
+    static RobotController rc;
 
     static MapLocation myBaseLoc = null;
 
     static MapLocation targetOnSpawn = null;
 
-    int bufferCode = -1;
+    int bufferCode = 0xFFFF;
 
     HeadquarterComm() throws GameActionException {
         this.rc = Robot.rc;
         if (rc.getType() == RobotType.HEADQUARTERS) getMyIndex();
         else getTargetOnSpawn();
+        if (myBaseLoc == null){
+            searchBase();
+        }
     }
 
     void getMyIndex() throws GameActionException {
@@ -43,9 +48,8 @@ public class HeadquarterComm {
     }
 
     void sendBuffer() throws GameActionException {
-        if (bufferCode < 0) return;
         rc.writeSharedArray(GameConstants.SHARED_ARRAY_LENGTH - 2 * hqIndex, bufferCode);
-        bufferCode = -1;
+        bufferCode = 0xFFFF;
     }
 
     void getTargetOnSpawn() throws GameActionException {
@@ -53,16 +57,17 @@ public class HeadquarterComm {
 
             //target info
             int code = rc.readSharedArray(GameConstants.SHARED_ARRAY_LENGTH - 2 * hqIndex);
+            if (code == 0xFFFF) continue;
             int x = (code >>> 10) & 0x3F;
             int y = (code >>> 4) & 0x3F;
             int id = (code & 0xF);
 
             //base info
             int code2 = rc.readSharedArray(GameConstants.SHARED_ARRAY_LENGTH - 2 * hqIndex + 1);
+            if (code2 == 0) return;
+
             int x2 = (code2 >>> 10) & 0x3F;
             int y2 = (code2 >>> 4) & 0x3F;
-
-            if (code2 == 0) return;
 
             //check id
             if ((rc.getID() & 0xF) != id) continue;
@@ -77,16 +82,57 @@ public class HeadquarterComm {
         }
     }
 
-    void findBase() throws GameActionException {
-        if (myBaseLoc != null) return;
+    void searchBase() throws GameActionException {
+        if (myBaseLoc != null){
+            searchIndex();
+            return;
+        }
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (RobotInfo r : robots){
             if (r.getTeam() != rc.getTeam()) continue;
             if (r.getType() == RobotType.HEADQUARTERS){
                 myBaseLoc = r.getLocation();
+                searchIndex();
                 return;
             }
         }
+    }
+
+    void searchIndex() throws GameActionException {
+        if (myBaseLoc == null) return;
+        for (hqIndex = 1; hqIndex <= 4; ++hqIndex){
+            MapLocation loc = getHQLocation(hqIndex);
+            if (loc == null) break;
+            if (myBaseLoc.distanceSquaredTo(loc) == 0) return;
+        }
+        hqIndex = 1;
+    }
+
+    static boolean isMyHQ(MapLocation loc) throws GameActionException {
+        for (int i = 1; i <= 4; ++i){
+
+            //base info
+            int code2 = rc.readSharedArray(GameConstants.SHARED_ARRAY_LENGTH - 2 * i + 1);
+            if (code2 == 0) return false;
+
+            int x2 = (code2 >>> 10) & 0x3F;
+            int y2 = (code2 >>> 4) & 0x3F;
+
+            if (loc.x == x2 && loc.y == y2) return true; //no target
+        }
+        return false;
+    }
+
+    MapLocation getHQLocation(int index) throws GameActionException {
+        int x = (index)%4;
+        if (x == 0) x = 4;
+        int code2 = rc.readSharedArray(GameConstants.SHARED_ARRAY_LENGTH - 2 * x + 1);
+        if (code2 == 0) return null;
+
+        int x2 = (code2 >>> 10) & 0x3F;
+        int y2 = (code2 >>> 4) & 0x3F;
+
+        return new MapLocation(x2, y2);
     }
 
 
